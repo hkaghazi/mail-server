@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  postfix:
+    image: postfix
+    container_name: postfix
+    restart: always
+    volumes:
+      - ./postfix/main.cf:/etc/postfix/main.cf
+      - ./ssl:/etc/ssl/mailserver
+      - maildata:/var/mail
+    environment:
+      - "myhostname=mail.example.com"
+      - "mydomain=example.com"
+      - "myorigin=/etc/mailname"
+      - "relayhost="
+      - "inet_interfaces=all"
+      - "inet_protocols=ipv4"
+    ports:
+      - "25:25"
+      - "587:587"  # For SMTPS
+      - "465:465"  # For SMTP over SSL
+
+  dovecot:
+    image: dovecot
+    container_name: dovecot
+    restart: always
+    volumes:
+      - ./dovecot/dovecot.conf:/etc/dovecot/dovecot.conf
+      - ./dovecot/conf.d/:/etc/dovecot/conf.d/
+      - ./ssl:/etc/ssl/mailserver
+      - maildata:/var/mail
+    ports:
+      - "143:143"
+      - "993:993"  # For IMAPS
+
+volumes:
+  maildata:

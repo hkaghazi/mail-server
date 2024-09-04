@@ -1,0 +1,46 @@
+myhostname = mail.example.com
+mydomain = example.com
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+mydestination = $myhostname, localhost.$mydomain, localhost
+relayhost = 
+mynetworks = 127.0.0.0/8, [::1]/128
+home_mailbox = Maildir/
+smtpd_banner = $myhostname ESMTP
+biff = no
+
+# TLS/SSL settings
+smtpd_tls_cert_file = /etc/ssl/mailserver/mailserver.crt
+smtpd_tls_key_file = /etc/ssl/mailserver/mailserver.key
+smtpd_use_tls = yes
+smtpd_tls_session_cache_database = btree:/var/lib/postfix/smtpd_scache
+smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache
+
+# Enforcing TLS for sending
+smtp_tls_security_level = may
+smtpd_tls_security_level = may
+
+# Enable submission and smtps services
+smtpd_sasl_auth_enable = yes
+smtpd_tls_auth_only = yes
+smtp_tls_note_starttls_offer = yes
+
+# Port 587 for SMTPS
+submission inet n       -       n       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=encrypt
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_tls_auth_only=yes
+  -o smtpd_reject_unverified_sender=no
+  -o smtpd_reject_unverified_recipient=no
+  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+
+# Port 465 for SMTP over SSL
+smtps    inet  n       -       n       -       -       smtpd
+  -o syslog_name=postfix/smtps
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_reject_unverified_sender=no
+  -o smtpd_reject_unverified_recipient=no
+  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
